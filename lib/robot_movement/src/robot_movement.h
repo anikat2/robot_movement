@@ -2,7 +2,6 @@
 #define ROBOT_MOVEMENT_H
 
 #include <Arduino.h>
-#include <vector>
 
 class RobotMovement {
     public:
@@ -10,6 +9,5 @@ class RobotMovement {
         RobotMovement(int waist_pin, int shoulder_pin, int elbow_pin, int end_effector_pin); //4 DOF arm constructor
         RobotMovement(int waist_pin, int shoulder_pin, int elbow_pin, int roll_pin, int pitch_pin, int yaw_pin); //6 DOF arm constructor
     private:
-        std::vector<int> pins;
 };
 #endif
