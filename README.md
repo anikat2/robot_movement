@@ -1,4 +1,4 @@
-# Robot Movement
+# Robot Movement (Beta)
 
 An open-source C++ library configured for Arduino Uno boards focused on making autonomous robotics accessible to all budgets. The library currently supports RRT, A*, and RRT* for 4-wheel drivetrains, inverse and forward kinematics for arms (min 4 DOF), and PID, Pure Pursuit, and RAMSETE for control.
 
