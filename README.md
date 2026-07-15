@@ -1,6 +1,6 @@
 # Robot Movement
 
-An open-source C++ library configured for Arduino Uno boards focused on making autonomous robotics accessible to all budgets. The library currently supports RRT, A*, and RRT* for 4-wheel drivetrains, inverse and forward kinematics for arms (min 4 DOF), and PID, Pure Pursuit, and RAMSETE for control. 
+An open-source C++ library configured for Arduino Uno boards focused on making autonomous robotics accessible to all budgets. The library currently supports RRT, A*, and RRT* for 4-wheel drivetrains, inverse and forward kinematics for arms (min 4 DOF), and PID, Pure Pursuit, and RAMSETE for control.
 
 # Compatibility
 4 DOF arms, 6 DOF arms, and 4 wheel drivetrains (July 4, 2026)
@@ -14,41 +14,112 @@ robot_movement/
 ├── .vscode/ *
 ├── include/ *
 ├── lib/
-│   ├── robot_movement/
-│   │   └── examples/
-│   |   └── src/
-│   |   |   └── 4_plus_DOF_arm/
-│   |   |   |   └── 4_plus_DOF_arm.cpp
-│   |   |   |   └── 4_plus_DOF_arm.h
-│   |   |   └── 4_wheel_drive/
-│   |   |   |   └── 4_wheel_drive.cpp
-│   |   |   |   └── 4_wheel_drive.h
-│   |   |   └── robot_movement.cpp
-│   |   |   └── robot_movement.h
-│   |   └── README *
-├── src/ *
+│   └── robot_movement/
+│       └── src/
+│           ├── 4_plus_DOF_arm/
+│           │   └── 4_plus_DOF_arm.h
+│           ├── 4_wheel_drive/
+│           │   ├── 4_wheel_drive.cpp / .h
+│           │   ├── a_star.cpp / .h
+│           │   ├── rrt.cpp / .h
+│           │   ├── rrt_star.cpp / .h
+│           │   └── path_config.h
+│           ├── robot_movement.cpp
+│           └── robot_movement.h
+├── python/
+│   ├── path_planning/          # desktop mirror of Arduino planners
+│   └── visualization/          # matplotlib demos
+├── src/
+│   └── main.cpp                # Arduino example
 ├── test/ *
 ├── .gitignore
 ├── platformio.ini*
-├── README
+└── README.md
 ```
 
-The `4_plus_DOF_arm/` directory contains all functionality relating to 4 and 6 DOF robotic arms, specifically the inverse and forward kinematics functions. 
+The `4_wheel_drive/` directory contains the Arduino C++ path planners (A*, RRT, RRT*) sized for Uno SRAM.
 
-The `4_wheel_drive/` directory contains all functionality relating to 4 wheel drivetrains, specifically the A*, RRT, and RRT* functions.
-
-The `robot_movement.cpp/h` files contains the constructors for compatible robots.
+The `python/visualization/` scripts plot the same algorithms on a desktop. `python/path_planning/` is an optional mirror for experimentation; onboard use must go through the Arduino library.
 
 # Quickstart
----- To be completed ----
+
+## Arduino (PlatformIO) — primary
+
+1. Open this project in PlatformIO.
+2. Build and upload the Uno environment (`platformio.ini`).
+3. Path planning example (`src/main.cpp` uses `FourWheelDrive` directly):
+
+```cpp
+#include <robot_movement.h>
+
+FourWheelDrive drive(2, 3, 4, 5);
+
+void setup() {
+  Serial.begin(9600);
+  randomSeed(analogRead(A0));
+
+  drive.a_star_init(8, 8);
+  drive.set_grid_obstacle(3, 3);
+  if (drive.a_star(0, 0, 7, 7)) {
+    for (uint8_t i = 0; i < drive.path_length(); i++) {
+      uint8_t x, y;
+      drive.get_grid_path_point(i, x, y);
+      Serial.print(x); Serial.print(','); Serial.println(y);
+    }
+  }
+
+  drive.rrt_init(0, 8, 0, 8, 0.5f, 0.1f, 400);
+  drive.add_circle_obstacle(4, 4, 1.2f);
+  drive.rrt(0.5f, 0.5f, 7.5f, 7.5f);
+
+  drive.rrt_star_init(0, 8, 0, 8, 0.5f, 0.1f, 2.0f, 400);
+  drive.rrt_star(0.5f, 0.5f, 7.5f, 7.5f);
+}
+```
+
+4. Or via the robot facade: `RobotMovement robot(2,3,4,5); robot.drive().a_star_init(8,8);`
+
+Default planner limits (Uno-safe) live in `path_config.h` (`8x8` A* grid, `24` RRT nodes). On Mega / ESP32 you can raise them with build flags:
+
+```ini
+build_flags =
+  -DRM_ASTAR_MAX_W=16
+  -DRM_ASTAR_MAX_H=16
+  -DRM_RRT_MAX_NODES=64
+```
+
+## Python visualization — desktop
+
+```bash
+cd python
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python visualization/visualize_a_star.py
+python visualization/visualize_rrt.py
+python visualization/visualize_rrt_star.py
+```
 
 # Usage
----- To be completed ----
+
+| Planner | Type | Arduino API | Python viz |
+| --- | --- | --- | --- |
+| A* | Grid | `a_star_init` / `a_star` | `visualize_a_star.py` |
+| RRT | Sampling | `rrt_init` / `rrt` | `visualize_rrt.py` |
+| RRT* | Sampling | `rrt_star_init` / `rrt_star` | `visualize_rrt_star.py` |
+
+Read the planned path with `path_length()` and `get_path_point()` / `get_grid_path_point()`.
 
 # Sources
+
 * Wikipedia contributors. "Forward kinematics." Wikipedia, The Free Encyclopedia. Wikipedia, The Free Encyclopedia, 19 Aug. 2025. Web. 5 Jul. 2026.
 * Wikipedia contributors. "Inverse kinematics." Wikipedia, The Free Encyclopedia. Wikipedia, The Free Encyclopedia, 26 Jun. 2026. Web. 5 Jul. 2026.
+* Wikipedia contributors. "A* search algorithm." Wikipedia, The Free Encyclopedia. Wikipedia, The Free Encyclopedia. Web. 14 Jul. 2026.
+* Wikipedia contributors. "Rapidly exploring random tree." Wikipedia, The Free Encyclopedia. Wikipedia, The Free Encyclopedia. Web. 14 Jul. 2026.
 * Chin, Tim. “Robotic Path Planning: RRT and RRT*.” Medium, 26 Feb. 2019, theclassytim.medium.com/robotic-path-planning-rrt-and-rrt-212319121378.
 * “Path Planning.” Www.mathworks.com, www.mathworks.com/discovery/path-planning.html.
 * “RAMSETE Controller | Purdue SIGBots Wiki.” Purduesigbots.com, 15 Nov. 2022, wiki.purduesigbots.com/software/control-algorithms/ramsete.
 * Zhou, Huiming. “Zhm-Real/PathPlanning.” GitHub, 20 Mar. 2022, github.com/zhm-real/PathPlanning.
+* Karaman, Sertac, and Emilio Frazzoli. “Sampling-based Algorithms for Optimal Motion Planning.” The International Journal of Robotics Research, vol. 30, no. 7, 2011, pp. 846–894.
+* LaValle, Steven M. “Rapidly-Exploring Random Trees: A New Tool for Path Planning.” Technical Report, Iowa State University, 1998.
+* Hart, Peter E., Nils J. Nilsson, and Bertram Raphael. “A Formal Basis for the Heuristic Determination of Minimum Cost Paths.” IEEE Transactions on Systems Science and Cybernetics, vol. 4, no. 2, 1968, pp. 100–107.

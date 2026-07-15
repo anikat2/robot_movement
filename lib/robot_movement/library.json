@@ -1,0 +1,8 @@
+{
+  "name": "robot_movement",
+  "version": "0.1.0",
+  "description": "Arduino path planning and robot movement helpers for 4-wheel drive and multi-DOF arms",
+  "keywords": "robotics, path-planning, a-star, rrt, arduino",
+  "frameworks": "arduino",
+  "platforms": "*"
+}
