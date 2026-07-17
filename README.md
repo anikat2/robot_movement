@@ -1,9 +1,9 @@
 # Robot Movement (Beta)
 
-An open-source C++ library configured for Arduino Uno boards focused on making autonomous robotics accessible to all budgets. The library currently supports RRT, A*, and RRT* for 4-wheel drivetrains, inverse and forward kinematics for arms (min 4 DOF), and PID, Pure Pursuit, and RAMSETE for control.
+An open-source C++ library configured for Arduino Uno boards focused on making autonomous robotics accessible to all budgets. The library currently supports RRT, A*, and RRT* and PID, Pure Pursuit, and RAMSETE for control.
 
 # Compatibility
-4 DOF arms, 6 DOF arms, and 4 wheel drivetrains (July 4, 2026)
+4 wheel drivetrains (July 4, 2026)
 
 # File Structure
 
